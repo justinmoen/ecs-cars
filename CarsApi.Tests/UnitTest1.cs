@@ -5,6 +5,7 @@ using CarsApi.Models;
 using CarsApi.Controllers;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 
 namespace CarsApi.Tests
 {
@@ -15,6 +16,7 @@ namespace CarsApi.Tests
         {
             //arrange
             var testCars = GetTestCars();
+            
             var controller = new CarsController();
 
             //act
@@ -41,7 +43,13 @@ namespace CarsApi.Tests
                 car.Model == "Cutlass Sierra" &&
                 car.Colour == "Dark Purple"
             );
-        }     
+        }
+
+        [Fact] 
+        public void PostCar_CreatesACar()
+        {
+            
+        }
 
         private List<Car> GetTestCars()
         {

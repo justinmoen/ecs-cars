@@ -13,6 +13,7 @@ namespace CarsApi.Controllers
     [Route("api/v1/[controller]")]
     public class CarsController : ControllerBase
     {
+        private readonly CarsContext _carsContext;
         private static readonly List<Car> cars = new List<Car>()
         {
             new Car{Id = 0, Make = "Mercury", Model = "Sable", Colour = "Silver"},
@@ -22,8 +23,9 @@ namespace CarsApi.Controllers
 
         //private readonly ILogger<CarsController> _logger;
 
-        public CarsController(/*ILogger<CarsController> logger*/)
+        public CarsController(CarsContext carsContext /*ILogger<CarsController> logger*/)
         {
+            _carsContext = carsContext;
             //_logger = logger;
         }
 
@@ -45,9 +47,19 @@ namespace CarsApi.Controllers
             return Ok(car);
         }
 
-        
+        [HttpPost]
+        public async Task<ActionResult<Car>> PostCar(Car car)
+        {
+            _carsContext.CarItems.Add(car);
+            await _carsContext.SaveChangesAsync();
 
-        
+            //return CreatedAtAction("GetTodoItem", new { id = todoItem.Id }, todoItem);
+            return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
+        }
+
+
+
+
         // [HttpGet]
         // public ActionResult<List<Car>> GetAllCars()
         // {
