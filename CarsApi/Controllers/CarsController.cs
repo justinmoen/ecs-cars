@@ -27,7 +27,12 @@ namespace CarsApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCar()
         {
-            return await _context.Car.ToListAsync();
+            var cars = await _context.Car.ToListAsync();
+            foreach (var car in cars)
+            {
+                car.Homonyms = await GetHomonyms(car.Model);
+            }
+            return cars;
         }
 
         // GET: api/v1/Cars/5
@@ -40,24 +45,8 @@ namespace CarsApi.Controllers
             {
                 return NotFound();
             }
-
-            HttpClient client = new HttpClient();
-            var response = await client.GetAsync(string.Format(datamuseUri, car.Model));
-            response.EnsureSuccessStatusCode(); //would want to add error handling here in case datamuse went down
-            string content = await response.Content.ReadAsStringAsync();
-            var objects = JArray.Parse(content);
-            foreach (var root in objects)
-            {
-                var homonym = root["word"].ToString();
-                if (car.Model.Equals(homonym, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-                car.Homonyms += homonym + ", ";
-            }
-
-            car.Homonyms = car.Homonyms.TrimEnd(new char[]{' ', ','});
             
+            car.Homonyms = await GetHomonyms(car.Model);
 
             return car;
         }
@@ -125,6 +114,27 @@ namespace CarsApi.Controllers
         private bool CarExists(int id)
         {
             return _context.Car.Any(e => e.Id == id);
+        }
+
+        private async Task<string> GetHomonyms(string model)
+        {
+            string homonyms = string.Empty;
+            HttpClient client = new HttpClient();
+            var response = await client.GetAsync(string.Format(datamuseUri, model));
+            response.EnsureSuccessStatusCode(); //would want to add error handling here in case datamuse went down
+            string content = await response.Content.ReadAsStringAsync();
+            var objects = JArray.Parse(content);
+            foreach (var root in objects)
+            {
+                var homonym = root["word"].ToString();
+                if (model.Equals(homonym, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                homonyms += homonym + ", ";
+            }
+
+            return homonyms.TrimEnd(new char[]{' ', ','});
         }
     }
 }
