@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CarsApi/bin/Debug/netcoreapp3.0/CarsApi.dll",
+            "program": "${workspaceFolder}/CarsApi/bin/Debug/netcoreapp3.1/CarsApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/CarsApi",
             "stopAtEntry": false,

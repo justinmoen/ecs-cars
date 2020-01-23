@@ -1,74 +1,109 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using CarsApi.Models;
-
 
 namespace CarsApi.Controllers
 {
-    [ApiController]
     [Route("api/v1/[controller]")]
+    [ApiController]
     public class CarsController : ControllerBase
     {
-        private readonly CarsContext _carsContext;
-        private static readonly List<Car> cars = new List<Car>()
-        {
-            new Car{Id = 0, Make = "Mercury", Model = "Sable", Colour = "Silver"},
-            new Car{Id = 1, Make = "Oldsmobile", Model = "Cutlass Sierra", Colour = "Dark Purple"},
-            new Car{Id = 2, Make = "Ford", Model = "Fusion", Colour = "Black"}
-        };
+        private readonly CarContext _context;
 
-        //private readonly ILogger<CarsController> _logger;
-
-        public CarsController(CarsContext carsContext /*ILogger<CarsController> logger*/)
+        public CarsController(CarContext context)
         {
-            _carsContext = carsContext;
-            //_logger = logger;
+            _context = context;
         }
 
+        // GET: api/Cars
         [HttpGet]
-        public IEnumerable<Car> GetAllCars()
+        public async Task<ActionResult<IEnumerable<Car>>> GetCar()
         {
-            return cars;
+            return await _context.Car.ToListAsync();
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public IActionResult GetCar(int id)
+        // GET: api/Cars/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Car>> GetCar(int id)
         {
-            var car = cars.FirstOrDefault(car => car.Id == id);
+            var car = await _context.Car.FindAsync(id);
+
             if (car == null)
             {
                 return NotFound();
             }
-            return Ok(car);
+
+            return car;
         }
 
+        // PUT: api/Cars/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see https://aka.ms/RazorPagesCRUD.
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCar(int id, Car car)
+        {
+            if (id != car.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(car).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CarExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/Cars
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
         public async Task<ActionResult<Car>> PostCar(Car car)
         {
-            _carsContext.CarItems.Add(car);
-            await _carsContext.SaveChangesAsync();
+            _context.Car.Add(car);
+            await _context.SaveChangesAsync();
 
-            //return CreatedAtAction("GetTodoItem", new { id = todoItem.Id }, todoItem);
-            return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
+            return CreatedAtAction("GetCar", new { id = car.Id }, car);
         }
 
+        // DELETE: api/Cars/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Car>> DeleteCar(int id)
+        {
+            var car = await _context.Car.FindAsync(id);
+            if (car == null)
+            {
+                return NotFound();
+            }
 
+            _context.Car.Remove(car);
+            await _context.SaveChangesAsync();
 
+            return car;
+        }
 
-        // [HttpGet]
-        // public ActionResult<List<Car>> GetAllCars()
-        // {
-        //     if (cars == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //     return Ok(cars);
-        //     //return Task.FromResult(cars);
-        // }
+        private bool CarExists(int id)
+        {
+            return _context.Car.Any(e => e.Id == id);
+        }
     }
 }
