@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CarsApi.Models;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
 
 namespace CarsApi.Controllers
 {
@@ -13,6 +15,7 @@ namespace CarsApi.Controllers
     [ApiController]
     public class CarsController : ControllerBase
     {
+        private const string datamuseUri = "https://api.datamuse.com/words?sl={0}&max=6";
         private readonly CarContext _context;
 
         public CarsController(CarContext context)
@@ -20,14 +23,14 @@ namespace CarsApi.Controllers
             _context = context;
         }
 
-        // GET: api/Cars
+        // GET: api/v1/Cars
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCar()
         {
             return await _context.Car.ToListAsync();
         }
 
-        // GET: api/Cars/5
+        // GET: api/v1/Cars/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Car>> GetCar(int id)
         {
@@ -38,10 +41,28 @@ namespace CarsApi.Controllers
                 return NotFound();
             }
 
+            HttpClient client = new HttpClient();
+            var response = await client.GetAsync(string.Format(datamuseUri, car.Model));
+            response.EnsureSuccessStatusCode(); //would want to add error handling here in case datamuse went down
+            string content = await response.Content.ReadAsStringAsync();
+            var objects = JArray.Parse(content);
+            foreach (var root in objects)
+            {
+                var homonym = root["word"].ToString();
+                if (car.Model.Equals(homonym, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                car.Homonyms += homonym + ", ";
+            }
+
+            car.Homonyms = car.Homonyms.TrimEnd(new char[]{' ', ','});
+            
+
             return car;
         }
 
-        // PUT: api/Cars/5
+        // PUT: api/v1/Cars/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
@@ -73,7 +94,7 @@ namespace CarsApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Cars
+        // POST: api/v1/Cars
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
@@ -85,7 +106,7 @@ namespace CarsApi.Controllers
             return CreatedAtAction("GetCar", new { id = car.Id }, car);
         }
 
-        // DELETE: api/Cars/5
+        // DELETE: api/v1/Cars/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Car>> DeleteCar(int id)
         {
