@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CarsApi.Models;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using CarsApi.Repositories;
 
 namespace CarsApi.Controllers
 {
@@ -17,22 +18,19 @@ namespace CarsApi.Controllers
     {
         private const string datamuseUri = "https://api.datamuse.com/words?sl={0}&max=6";
         private readonly CarContext _context;
+        private readonly IRepository<Car> _carsRepository;
 
-        public CarsController(CarContext context)
+        public CarsController(CarContext context, IRepository<Car> repository)
         {
             _context = context;
+            _carsRepository = repository;
         }
 
         // GET: api/v1/Cars
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Car>>> GetCar()
+        public async Task<ActionResult> GetCar()
         {
-            var cars = await _context.Car.ToListAsync();
-            foreach (var car in cars)
-            {
-                car.Homonyms = await GetHomonyms(car.Model);
-            }
-            return cars;
+            return Ok(await _carsRepository.GetAll()); 
         }
 
         // GET: api/v1/Cars/5

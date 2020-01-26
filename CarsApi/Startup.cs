@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using CarsApi.Models;
+using CarsApi.Repositories;
 
 namespace CarsApi
 {
@@ -20,9 +21,11 @@ namespace CarsApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-             services.AddDbContext<CarContext>(opt =>
+            services.AddDbContext<CarContext>(opt =>
                 opt.UseInMemoryDatabase("CarList"));
             services.AddControllers();
+
+            services.AddScoped<IRepository<Car>, CarsRepository>();
 
             // services.AddDbContext<CarContext>(options =>
             //         options.UseSqlServer(Configuration.GetConnectionString("CarContext")));
