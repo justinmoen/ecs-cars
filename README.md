@@ -1,5 +1,47 @@
 # Cars Web Dev Test
 
+Instructions to run:
+1. Clone this repository
+1. Build locally
+1. Hit ctrl-f5 to run. A browser will open but I did most of my testing in postman.
+
+## Sample postman requests
+I'm having difficulty getting sharing to work. You can try this or otherwise here are some sample calls you can make.
+https://app.getpostman.com/join-team?invite_code=03f7b47d1e3cfc16cb2e7e79586a60f2
+
+GET: 
+https://localhost:5001/api/v1/cars
+
+https://localhost:5001/api/v1/cars/1
+
+POST: 
+https://localhost:5001/api/v1/cars
+payload:
+    {
+        "make": "Mercury",
+        "model": "Sable",
+        "colour": "Silver",
+        "year": 2010
+    }
+
+PUT:
+https://localhost:5001/api/v1/cars/1
+payload:
+    {
+    	"id": 1,
+        "make": "NewMake",
+        "model": "NewModel",
+        "colour": "NewColour",
+        "year": 2010
+    }
+
+DELETE:
+https://localhost:5001/api/v1/cars/1
+
+
+
+#Everything below this line was the original code test.
+
 # Cars API
 
 Please create a new git repo (don't fork this one) and follow the instructions below.
